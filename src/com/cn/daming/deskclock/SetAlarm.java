@@ -42,10 +42,7 @@ import android.widget.ListView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-/**
- * 管理每一个闹钟
- * 每一个闹钟对应的信息都绑定在Preference中了
- */
+
 public class SetAlarm extends PreferenceActivity
         implements TimePickerDialog.OnTimeSetListener,
         Preference.OnPreferenceChangeListener {

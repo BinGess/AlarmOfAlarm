@@ -20,8 +20,7 @@ import java.util.Calendar;
 import java.text.DateFormatSymbols;
 
 /**
- * The Alarms provider supplies info about Alarm Clock settings
- * 核心类，对Clock设置提供支持信息
+
  */
 public class Alarms {
 

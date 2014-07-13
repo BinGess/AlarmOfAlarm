@@ -30,14 +30,7 @@ import android.util.Log;
 
 public final class Alarm implements Parcelable {
 
-    //////////////////////////////
-    //序列化的Parcelable接口
-	/*
-	 * by wangxianming 
-	 * in 2012-04-09
-	 * by start
-	 */
-    //////////////////////////////
+	
     public static final Parcelable.Creator<Alarm> CREATOR
             = new Parcelable.Creator<Alarm>() {
                 public Alarm createFromParcel(Parcel p) {
@@ -65,16 +58,9 @@ public final class Alarm implements Parcelable {
         p.writeParcelable(alert, flags);
         p.writeInt(silent ? 1 : 0);
     }
-    //////////////////////////////
-    // by end
-    //////////////////////////////
 
-    //////////////////////////////
-    // 定义列
-    //////////////////////////////
     public static class Columns implements BaseColumns {
         /**
-         * The content:// 为这个表定义一个共享的Url
          */
         public static final Uri CONTENT_URI =
                 Uri.parse("content://com.cn.daming.deskclock/alarm");
@@ -156,10 +142,10 @@ public final class Alarm implements Parcelable {
         public static final int ALARM_ALERT_INDEX = 8;
     }
     //////////////////////////////
-    // End 每一列定义结束
+    // End ���������������������
     //////////////////////////////
 
-    // 对应的公共的每一列的映射
+    // ������������������������������������
     public int        id;
     public boolean    enabled;
     public int        hour;
@@ -214,7 +200,7 @@ public final class Alarm implements Parcelable {
     }
 
     // Creates a default alarm at the current time.
-    //创建一个默认当前时间的闹钟
+    //���������������������������������������
     public Alarm() {
         id = -1;
         Calendar c = Calendar.getInstance();

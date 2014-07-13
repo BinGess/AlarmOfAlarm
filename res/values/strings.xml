@@ -3,7 +3,7 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <string name="hello">Hello World, DeskClockMainActivity!</string>
-    <string name="app_name">玲闹钟</string>
+    <string name="app_name">闹钟</string>
     <string name="label">"标签"</string>
     <string name="alarm_list_title">"闹钟"</string>
     <string name="add_alarm">"添加玲闹钟"</string>

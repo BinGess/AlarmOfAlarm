@@ -92,10 +92,9 @@ public class DeskClockMainActivity extends Activity implements OnItemClickListen
         startActivity(new Intent(this, SetAlarm.class));
     }
     
-    /**
-     * @author wangxianming
-     */
+
     private class AlarmTimeAdapter extends CursorAdapter {
+    	
         public AlarmTimeAdapter(Context context, Cursor cursor) {
             super(context, cursor);
         }
