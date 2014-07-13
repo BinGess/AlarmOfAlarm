@@ -58,7 +58,8 @@ public final class R {
         public static final int incall_round_button=0x7f020027;
         public static final int indicator_clock_onoff=0x7f020028;
         public static final int list_selector_background_pressed=0x7f020029;
-        public static final int stat_notify_alarm=0x7f02002a;
+        public static final int radius_bg=0x7f02002a;
+        public static final int stat_notify_alarm=0x7f02002b;
     }
     public static final class id {
         public static final int add_alarm=0x7f0a0006;

@@ -5,7 +5,9 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:background="@drawable/radius_bg"
+    >
 
     <!-- I can't use a normal checkbox here for a couple reasons:
          1. The checkbox button resources cannot contain layouts so I have to

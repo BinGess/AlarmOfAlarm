@@ -10,7 +10,7 @@
         android:id="@+id/add_alarm"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:drawable/list_selector_background"
+        android:background="#2DBACF"
         android:clickable="true"
         android:focusable="true"
         android:orientation="horizontal" >
@@ -44,10 +44,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
+        android:background="#2DBACF"
         android:paddingBottom="2dp"
         android:paddingLeft="10dp"
         android:paddingRight="10dp"
-        android:paddingTop="2dp" />
+        android:paddingTop="2dp" 
+        android:dividerHeight="10dp"/>
 
     <LinearLayout
         android:layout_width="match_parent"
