@@ -18,7 +18,6 @@ package com.cn.daming.deskclock;
 
 import java.text.DateFormatSymbols;
 import java.util.Calendar;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -33,6 +32,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import com.cn.blake.deskclock.R;
 
 /**
  * Displays the time

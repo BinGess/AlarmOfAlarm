@@ -25,6 +25,12 @@
         android:drawable="@drawable/btn_strip_trans_left_selected" />
 
     <item android:state_enabled="true"
-        android:drawable="@drawable/btn_strip_trans_left_normal" />
+
+        android:drawable="@drawable/btn_strip_trans_left_normal" 
+         />
+            <!--   android:background="@color/toolbarbackground" -->
+        
+        
+       
 
 </selector>

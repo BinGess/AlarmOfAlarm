@@ -1,7 +1,6 @@
 package com.cn.daming.deskclock;
 
 import java.util.Calendar;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -28,303 +27,322 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import com.cn.blake.deskclock.R;
 
-public class DeskClockMainActivity extends Activity implements OnItemClickListener{
-	
-    static final String PREFERENCES = "AlarmClock";
+public class DeskClockMainActivity extends Activity implements
+		OnItemClickListener {
 
-    /** This must be false for production.  If true, turns on logging,
-        test code, etc. */
-    static final boolean DEBUG = false;
+	static final String PREFERENCES = "AlarmClock";
 
-    private SharedPreferences mPrefs;
-    private LayoutInflater mFactory;
-    private ListView mAlarmsList;
-    private Cursor mCursor;
-	
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        
-       
-        mFactory = LayoutInflater.from(this);
-        mPrefs = getSharedPreferences(PREFERENCES, 0);
-        mCursor = Alarms.getAlarmsCursor(getContentResolver());
-        
-        updateLayout();
+	/**
+	 * This must be false for production. If true, turns on logging, test code,
+	 * etc.
+	 */
+	static final boolean DEBUG = false;
 
-    }
-    
-    private void updateLayout() {
-    	
-    	setContentView(R.layout.alarm_clock);
-        mAlarmsList = (ListView) findViewById(R.id.alarms_list);
-        AlarmTimeAdapter adapter = new AlarmTimeAdapter(this, mCursor);
-        mAlarmsList.setAdapter(adapter);
-        mAlarmsList.setVerticalScrollBarEnabled(true);
-        mAlarmsList.setOnItemClickListener(this);
-        mAlarmsList.setOnCreateContextMenuListener(this);
+	private SharedPreferences mPrefs;
+	private LayoutInflater mFactory;
+	private ListView mAlarmsList;
+	private Cursor mCursor;
 
-        View addAlarm = findViewById(R.id.add_alarm);
-        addAlarm.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    addNewAlarm();
-                }
-            });
-        // Make the entire view selected when focused.
-        addAlarm.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                public void onFocusChange(View v, boolean hasFocus) {
-                    v.setSelected(hasFocus);
-                }
-        });
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
 
-        ImageButton deskClock =
-                (ImageButton) findViewById(R.id.desk_clock_button);
-        
-        deskClock.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    
-                }
-        });
-    }
-    
-    private void addNewAlarm() {
-        startActivity(new Intent(this, SetAlarm.class));
-    }
-    
+		mFactory = LayoutInflater.from(this);
+		mPrefs = getSharedPreferences(PREFERENCES, 0);
+		mCursor = Alarms.getAlarmsCursor(getContentResolver());
 
-    private class AlarmTimeAdapter extends CursorAdapter {
-    	
-        public AlarmTimeAdapter(Context context, Cursor cursor) {
-            super(context, cursor);
-        }
+		updateLayout();
 
-        public View newView(Context context, Cursor cursor, ViewGroup parent) {
-            View ret = mFactory.inflate(R.layout.alarm_time, parent, false);
+	}
 
-            DigitalClock digitalClock =
-                    (DigitalClock) ret.findViewById(R.id.digitalClock);
-            digitalClock.setLive(false);
-            return ret;
-        }
+	private void updateLayout() {
 
-        public void bindView(View view, Context context, Cursor cursor) {
-        	
-            final Alarm alarm = new Alarm(cursor);
+		setContentView(R.layout.alarm_clock);
+		mAlarmsList = (ListView) findViewById(R.id.alarms_list);
+		AlarmTimeAdapter adapter = new AlarmTimeAdapter(this, mCursor);
+		mAlarmsList.setAdapter(adapter);
+		mAlarmsList.setVerticalScrollBarEnabled(true);
+		mAlarmsList.setOnItemClickListener(this);
+		mAlarmsList.setOnCreateContextMenuListener(this);
 
-            View indicator = view.findViewById(R.id.indicator);
+		View addAlarm = findViewById(R.id.add_alarm);
+		addAlarm.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				addNewAlarm();
+			}
+		});
+		
+		
+		View goToSetting = findViewById(R.id.setting);
+		goToSetting.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				goToSetting();
+			}
+		});
+		// Make the entire view selected when focused.
+		addAlarm.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+			public void onFocusChange(View v, boolean hasFocus) {
+				v.setSelected(hasFocus);
+			}
+		});
 
-            // Set the initial resource for the bar image.
-           // final ImageView barOnOff =(ImageView) indicator.findViewById(R.id.bar_onoff);
-            
-            //barOnOff.setImageResource(alarm.enabled ?R.drawable.ic_indicator_on : R.drawable.ic_indicator_off);
+		//界面底部的那个时间条
+//		ImageButton deskClock = (ImageButton) findViewById(R.id.desk_clock_button);
+//
+//		deskClock.setOnClickListener(new View.OnClickListener() {
+//			public void onClick(View v) {
+//
+//			}
+//		});
+	}
 
-            // Set the initial state of the clock "checkbox"
-            final CheckBox clockOnOff = (CheckBox) indicator.findViewById(R.id.clock_onoff);
-            
-            clockOnOff.setChecked(alarm.enabled);
+	private void addNewAlarm() {
+		startActivity(new Intent(this, SetAlarm.class));
+	}
 
-            // Clicking outside the "checkbox" should also change the state.
-            indicator.setOnClickListener(new OnClickListener() {
-                    public void onClick(View v) {
-                        clockOnOff.toggle();
-                        updateIndicatorAndAlarm(clockOnOff.isChecked(), alarm);
-                    }
-            });
+	private void goToSetting() {
+		startActivity(new Intent(this, SettingsActivity.class));
+	}
 
-            DigitalClock digitalClock =
-                    (DigitalClock) view.findViewById(R.id.digitalClock);
+	private class AlarmTimeAdapter extends CursorAdapter {
 
-            // set the alarm text
-            final Calendar c = Calendar.getInstance();
-            c.set(Calendar.HOUR_OF_DAY, alarm.hour);
-            c.set(Calendar.MINUTE, alarm.minutes);
-            digitalClock.updateTime(c);
-            digitalClock.setTypeface(Typeface.DEFAULT);
+		public AlarmTimeAdapter(Context context, Cursor cursor) {
+			super(context, cursor);
+		}
 
-            // Set the repeat text or leave it blank if it does not repeat.
-            TextView daysOfWeekView =
-                    (TextView) digitalClock.findViewById(R.id.daysOfWeek);
-            final String daysOfWeekStr =
-                    alarm.daysOfWeek.toString(DeskClockMainActivity.this, false);
-            if (daysOfWeekStr != null && daysOfWeekStr.length() != 0) {
-                daysOfWeekView.setText(daysOfWeekStr);
-                daysOfWeekView.setVisibility(View.VISIBLE);
-            } else {
-                daysOfWeekView.setVisibility(View.GONE);
-            }
+		public View newView(Context context, Cursor cursor, ViewGroup parent) {
+			View ret = mFactory.inflate(R.layout.alarm_time, parent, false);
 
-            // Display the label
-            TextView labelView =
-                    (TextView) view.findViewById(R.id.label);
-            if (alarm.label != null && alarm.label.length() != 0) {
-                labelView.setText(alarm.label);
-                labelView.setVisibility(View.VISIBLE);
-            } else {
-                labelView.setVisibility(View.GONE);
-            }
-        }
-    };
-    
-    /*private void updateIndicatorAndAlarm(boolean enabled, ImageView bar,
-            Alarm alarm) {
-        bar.setImageResource(enabled ? R.drawable.ic_indicator_on
-                : R.drawable.ic_indicator_off);
-        Alarms.enableAlarm(this, alarm.id, enabled);
-        if (enabled) {
-            SetAlarm.popAlarmSetToast(this, alarm.hour, alarm.minutes,
-                    alarm.daysOfWeek);
-        }
-    }*/
-    
-    private void updateIndicatorAndAlarm(boolean enabled, 
-            Alarm alarm) 
-    {
-        Alarms.enableAlarm(this, alarm.id, enabled);
-        if (enabled) {
-            SetAlarm.popAlarmSetToast(this, alarm.hour, alarm.minutes,
-                    alarm.daysOfWeek);
-        }
-    }
-    
-    /*
-     * (non-Javadoc)
-     * @see android.app.Activity#onContextItemSelected(android.view.MenuItem)
-     */
-    @Override
-    public boolean onContextItemSelected(final MenuItem item) {
-        final AdapterContextMenuInfo info =
-                (AdapterContextMenuInfo) item.getMenuInfo();
-        final int id = (int) info.id;
-        // Error check just in case.
-        if (id == -1) {
-            return super.onContextItemSelected(item);
-        }
-        switch (item.getItemId()) {
-            case R.id.delete_alarm:
-                // Confirm that the alarm will be deleted.
-                new AlertDialog.Builder(this)
-                        .setTitle(getString(R.string.delete_alarm))
-                        .setMessage(getString(R.string.delete_alarm_confirm))
-                        .setPositiveButton(android.R.string.ok,
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface d,
-                                            int w) {
-                                        Alarms.deleteAlarm(DeskClockMainActivity.this, id);
-                                    }
-                                })
-                        .setNegativeButton(android.R.string.cancel, null)
-                        .show();
-                return true;
+			DigitalClock digitalClock = (DigitalClock) ret
+					.findViewById(R.id.digitalClock);
+			digitalClock.setLive(false);
+			return ret;
+		}
 
-            case R.id.enable_alarm:
-                final Cursor c = (Cursor) mAlarmsList.getAdapter()
-                        .getItem(info.position);
-                final Alarm alarm = new Alarm(c);
-                Alarms.enableAlarm(this, alarm.id, !alarm.enabled);
-                if (!alarm.enabled) {
-                    SetAlarm.popAlarmSetToast(this, alarm.hour, alarm.minutes,
-                            alarm.daysOfWeek);
-                }
-                return true;
+		public void bindView(View view, Context context, Cursor cursor) {
 
-            case R.id.edit_alarm:
-                Intent intent = new Intent(this, SetAlarm.class);
-                intent.putExtra(Alarms.ALARM_ID, id);
-                startActivity(intent);
-                return true;
+			final Alarm alarm = new Alarm(cursor);
 
-            default:
-                break;
-        }
-        return super.onContextItemSelected(item);
-    }
-    
-    /*
-     * (non-Javadoc)
-     * @see android.app.Activity#onCreateContextMenu(android.view.ContextMenu, android.view.View, android.view.ContextMenu.ContextMenuInfo)
-     */
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View view,
-            ContextMenuInfo menuInfo) {
-        // Inflate the menu from xml.
-        getMenuInflater().inflate(R.menu.context_menu, menu);
+			View indicator = view.findViewById(R.id.indicator);
 
-        // Use the current item to create a custom view for the header.
-        final AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
-        final Cursor c =
-                (Cursor) mAlarmsList.getAdapter().getItem((int) info.position);
-        final Alarm alarm = new Alarm(c);
+			// Set the initial resource for the bar image.
+			// final ImageView barOnOff =(ImageView)
+			// indicator.findViewById(R.id.bar_onoff);
 
-        // Construct the Calendar to compute the time.
-        final Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.HOUR_OF_DAY, alarm.hour);
-        cal.set(Calendar.MINUTE, alarm.minutes);
-        final String time = Alarms.formatTime(this, cal);
+			// barOnOff.setImageResource(alarm.enabled
+			// ?R.drawable.ic_indicator_on : R.drawable.ic_indicator_off);
 
-        // Inflate the custom view and set each TextView's text.
-        final View v = mFactory.inflate(R.layout.context_menu_header, null);
-        TextView textView = (TextView) v.findViewById(R.id.header_time);
-        textView.setText(time);
-        textView = (TextView) v.findViewById(R.id.header_label);
-        textView.setText(alarm.label);
+			// Set the initial state of the clock "checkbox"
+			final CheckBox clockOnOff = (CheckBox) indicator
+					.findViewById(R.id.clock_onoff);
 
-        // Set the custom view on the menu.
-        menu.setHeaderView(v);
-        // Change the text based on the state of the alarm.
-        if (alarm.enabled) {
-            menu.findItem(R.id.enable_alarm).setTitle(R.string.disable_alarm);
-        }
-    }
-    
-    /*
-     * (non-Javadoc)
-     * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
-     */
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_item_settings:
-                startActivity(new Intent(this, SettingsActivity.class));
-                return true;
-            case R.id.menu_item_desk_clock:
-            	//modify by wangxianming in 2012-4-14
-//                startActivity(new Intent(this, DeskClock.class));
-                return true;
-            case R.id.menu_item_add_alarm:
-                addNewAlarm();
-                return true;
-            default:
-                break;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-   
-    /*
-     * (non-Javadoc)
-     * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
-     */
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.alarm_list_menu, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-    
-    /*
-     * (non-Javadoc)
-     * @see android.widget.AdapterView.OnItemClickListener#onItemClick(android.widget.AdapterView, android.view.View, int, long)
-     */
+			clockOnOff.setChecked(alarm.enabled);
+
+			// Clicking outside the "checkbox" should also change the state.
+			indicator.setOnClickListener(new OnClickListener() {
+				public void onClick(View v) {
+					clockOnOff.toggle();
+					updateIndicatorAndAlarm(clockOnOff.isChecked(), alarm);
+				}
+			});
+
+			DigitalClock digitalClock = (DigitalClock) view
+					.findViewById(R.id.digitalClock);
+
+			// set the alarm text
+			final Calendar c = Calendar.getInstance();
+			c.set(Calendar.HOUR_OF_DAY, alarm.hour);
+			c.set(Calendar.MINUTE, alarm.minutes);
+			digitalClock.updateTime(c);
+			digitalClock.setTypeface(Typeface.DEFAULT);
+
+			// Set the repeat text or leave it blank if it does not repeat.
+			TextView daysOfWeekView = (TextView) digitalClock
+					.findViewById(R.id.daysOfWeek);
+			final String daysOfWeekStr = alarm.daysOfWeek.toString(
+					DeskClockMainActivity.this, false);
+			if (daysOfWeekStr != null && daysOfWeekStr.length() != 0) {
+				daysOfWeekView.setText(daysOfWeekStr);
+				daysOfWeekView.setVisibility(View.VISIBLE);
+			} else {
+				daysOfWeekView.setVisibility(View.GONE);
+			}
+
+			// Display the label
+			TextView labelView = (TextView) view.findViewById(R.id.label);
+			if (alarm.label != null && alarm.label.length() != 0) {
+				labelView.setText(alarm.label);
+				labelView.setVisibility(View.VISIBLE);
+			} else {
+				labelView.setVisibility(View.GONE);
+			}
+		}
+	};
+
+	/*
+	 * private void updateIndicatorAndAlarm(boolean enabled, ImageView bar,
+	 * Alarm alarm) { bar.setImageResource(enabled ? R.drawable.ic_indicator_on
+	 * : R.drawable.ic_indicator_off); Alarms.enableAlarm(this, alarm.id,
+	 * enabled); if (enabled) { SetAlarm.popAlarmSetToast(this, alarm.hour,
+	 * alarm.minutes, alarm.daysOfWeek); } }
+	 */
+
+	private void updateIndicatorAndAlarm(boolean enabled, Alarm alarm) {
+		Alarms.enableAlarm(this, alarm.id, enabled);
+		if (enabled) {
+			SetAlarm.popAlarmSetToast(this, alarm.hour, alarm.minutes,
+					alarm.daysOfWeek);
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 长按操作，将出现弹窗
+	 * @see android.app.Activity#onContextItemSelected(android.view.MenuItem)
+	 */
+	@Override
+	public boolean onContextItemSelected(final MenuItem item) {
+		
+		final AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
+				.getMenuInfo();
+		final int id = (int) info.id;
+		// Error check just in case.
+		if (id == -1) {
+			return super.onContextItemSelected(item);
+		}
+		switch (item.getItemId()) {
+		case R.id.delete_alarm:
+			// Confirm that the alarm will be deleted.
+			new AlertDialog.Builder(this)
+					.setTitle(getString(R.string.delete_alarm))
+					.setMessage(getString(R.string.delete_alarm_confirm))
+					.setPositiveButton(android.R.string.ok,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface d, int w) {
+									Alarms.deleteAlarm(
+											DeskClockMainActivity.this, id);
+								}
+							}).setNegativeButton(android.R.string.cancel, null)
+					.show();
+			return true;
+
+		case R.id.enable_alarm:
+			final Cursor c = (Cursor) mAlarmsList.getAdapter().getItem(
+					info.position);
+			final Alarm alarm = new Alarm(c);
+			Alarms.enableAlarm(this, alarm.id, !alarm.enabled);
+			if (!alarm.enabled) {
+				SetAlarm.popAlarmSetToast(this, alarm.hour, alarm.minutes,
+						alarm.daysOfWeek);
+			}
+			return true;
+
+		case R.id.edit_alarm:
+			Intent intent = new Intent(this, SetAlarm.class);
+			intent.putExtra(Alarms.ALARM_ID, id);
+			startActivity(intent);
+			return true;
+
+		default:
+			break;
+		}
+		return super.onContextItemSelected(item);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onCreateContextMenu(android.view.ContextMenu,
+	 * android.view.View, android.view.ContextMenu.ContextMenuInfo)
+	 */
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View view,
+			ContextMenuInfo menuInfo) {
+		// Inflate the menu from xml.
+		getMenuInflater().inflate(R.menu.context_menu, menu);
+
+		// Use the current item to create a custom view for the header.
+		final AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
+		final Cursor c = (Cursor) mAlarmsList.getAdapter().getItem(
+				(int) info.position);
+		final Alarm alarm = new Alarm(c);
+
+		// Construct the Calendar to compute the time.
+		final Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.HOUR_OF_DAY, alarm.hour);
+		cal.set(Calendar.MINUTE, alarm.minutes);
+		final String time = Alarms.formatTime(this, cal);
+
+		// Inflate the custom view and set each TextView's text.
+		final View v = mFactory.inflate(R.layout.context_menu_header, null);
+		TextView textView = (TextView) v.findViewById(R.id.header_time);
+		textView.setText(time);
+		textView = (TextView) v.findViewById(R.id.header_label);
+		textView.setText(alarm.label);
+
+		// Set the custom view on the menu.
+		menu.setHeaderView(v);
+		// Change the text based on the state of the alarm.
+		if (alarm.enabled) {
+			menu.findItem(R.id.enable_alarm).setTitle(R.string.disable_alarm);
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
+	 */
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.menu_item_settings:
+			goToSetting();
+			return true;
+		case R.id.menu_item_desk_clock:
+			// modify by wangxianming in 2012-4-14
+			// startActivity(new Intent(this, DeskClock.class));
+			return true;
+		case R.id.menu_item_add_alarm:
+			addNewAlarm();
+			return true;
+		default:
+			break;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
+	 */
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.alarm_list_menu, menu);
+		return super.onCreateOptionsMenu(menu);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * android.widget.AdapterView.OnItemClickListener#onItemClick(android.widget
+	 * .AdapterView, android.view.View, int, long)
+	 */
 	public void onItemClick(AdapterView<?> adapterView, View v, int pos, long id) {
 		Intent intent = new Intent(this, SetAlarm.class);
-        intent.putExtra(Alarms.ALARM_ID, (int) id);
-        startActivity(intent);
-		
+		intent.putExtra(Alarms.ALARM_ID, (int) id);
+		startActivity(intent);
+
 	}
-	
-   @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        ToastMaster.cancelToast();
-        mCursor.close();
-    }
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		ToastMaster.cancelToast();
+		mCursor.close();
+	}
 }

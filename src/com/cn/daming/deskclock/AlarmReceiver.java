@@ -27,6 +27,7 @@ import android.content.BroadcastReceiver;
 import android.database.Cursor;
 import android.os.Parcel;
 import android.util.Log;
+import com.cn.blake.deskclock.R;
 
 /**
  * Glue class: connects AlarmAlert IntentReceiver to AlarmAlert

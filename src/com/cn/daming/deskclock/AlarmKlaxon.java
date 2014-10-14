@@ -35,6 +35,7 @@ import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.media.AudioManager.OnAudioFocusChangeListener;
+import com.cn.blake.deskclock.R;
 /**
  * Manages alarms and vibe. Runs as a service so that it can continue to play
  * if another activity overrides the AlarmAlert dialog.

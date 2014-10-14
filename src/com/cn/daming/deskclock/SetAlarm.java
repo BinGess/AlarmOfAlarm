@@ -34,324 +34,373 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TimePicker;
+import android.widget.TimePicker.OnTimeChangedListener;
 import android.widget.Toast;
 
+import com.cn.blake.deskclock.R;
 
-public class SetAlarm extends PreferenceActivity
-        implements TimePickerDialog.OnTimeSetListener,
-        Preference.OnPreferenceChangeListener {
+public class SetAlarm extends PreferenceActivity implements
+		TimePickerDialog.OnTimeSetListener,
+		Preference.OnPreferenceChangeListener {
 
-    private EditTextPreference mLabel;
-    private CheckBoxPreference mEnabledPref;
-    private Preference mTimePref;
-    private AlarmPreference mAlarmPref;
-    private CheckBoxPreference mVibratePref;
-    private RepeatPreference mRepeatPref;
-    private MenuItem mTestAlarmItem;
+	private EditTextPreference mLabel;
+	private CheckBoxPreference mEnabledPref;
+	private Preference mTimePref;
+	private AlarmPreference mAlarmPref;
+	private CheckBoxPreference mVibratePref;
+	private RepeatPreference mRepeatPref;
+	private MenuItem mTestAlarmItem;
+	private TimePicker timePick1;
 
-    private int     mId;
-    private int     mHour;
-    private int     mMinutes;
-    private boolean mTimePickerCancelled;
-    private Alarm   mOriginalAlarm;
+	private int mId;
+	private int mHour;
+	private int mMinutes;
+	private boolean mTimePickerCancelled;
+	private Alarm mOriginalAlarm;
 
-    /**
-     * Set an alarm.  Requires an Alarms.ALARM_ID to be passed in as an
-     * extra. FIXME: Pass an Alarm object like every other Activity.
-     */
-    @Override
-    protected void onCreate(Bundle icicle) {
-        super.onCreate(icicle);
+	/**
+	 * Set an alarm. Requires an Alarms.ALARM_ID to be passed in as an extra.
+	 * FIXME: Pass an Alarm object like every other Activity.
+	 */
+	@Override
+	protected void onCreate(Bundle icicle) {
+		super.onCreate(icicle);
+		// Override the default content view.
+		setContentView(R.layout.set_alarm);
 
-        // Override the default content view.
-        setContentView(R.layout.set_alarm);
+		addPreferencesFromResource(R.xml.alarm_prefs);
 
-        addPreferencesFromResource(R.xml.alarm_prefs);
+		// 尝试直接显示timepicker
+//
+//		timePick1 = (TimePicker) findViewById(R.id.timePic1);
+//		// 是否使用24小时制
+//		timePick1.setIs24HourView(true);
+//		TimeListener times = new TimeListener();
+//		timePick1.setOnTimeChangedListener(times);
 
-        // Get each preference so we can retrieve the value later.
-        mLabel = (EditTextPreference) findPreference("label");
-        mLabel.setOnPreferenceChangeListener(
-                new Preference.OnPreferenceChangeListener() {
-                    public boolean onPreferenceChange(Preference p,
-                            Object newValue) {
-                        String val = (String) newValue;
-                        // Set the summary based on the new label.
-                        p.setSummary(val);
-                        if (val != null && !val.equals(mLabel.getText())) {
-                            // Call through to the generic listener.
-                            return SetAlarm.this.onPreferenceChange(p,
-                                newValue);
-                        }
-                        return true;
-                    }
-                });
-        mEnabledPref = (CheckBoxPreference) findPreference("enabled");
-        mEnabledPref.setOnPreferenceChangeListener(
-                new Preference.OnPreferenceChangeListener() {
-                    public boolean onPreferenceChange(Preference p,
-                            Object newValue) {
-                        // Pop a toast when enabling alarms.
-                        if (!mEnabledPref.isChecked()) {
-                            popAlarmSetToast(SetAlarm.this, mHour, mMinutes,
-                                mRepeatPref.getDaysOfWeek());
-                        }
-                        return SetAlarm.this.onPreferenceChange(p, newValue);
-                    }
-                });
-        mTimePref = findPreference("time");
-        mAlarmPref = (AlarmPreference) findPreference("alarm");
-        mAlarmPref.setOnPreferenceChangeListener(this);
-        mVibratePref = (CheckBoxPreference) findPreference("vibrate");
-        mVibratePref.setOnPreferenceChangeListener(this);
-        mRepeatPref = (RepeatPreference) findPreference("setRepeat");
-        mRepeatPref.setOnPreferenceChangeListener(this);
+		// 尝试直接显示timepicker
 
-        Intent i = getIntent();
-        mId = i.getIntExtra(Alarms.ALARM_ID, -1);
-        if (true) {
-            Log.v("wangxianming", "In SetAlarm, alarm id = " + mId);
-        }
+		// Get each preference so we can retrieve the value later.
+		mLabel = (EditTextPreference) findPreference("label");
+		mLabel.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+			
+			public boolean onPreferenceChange(Preference p, Object newValue) {
+				String val = (String) newValue;
+				// Set the summary based on the new label.
+				p.setSummary(val);
+				if (val != null && !val.equals(mLabel.getText())) {
+					// Call through to the generic listener.
+					return SetAlarm.this.onPreferenceChange(p, newValue);
+				}
+				return true;
+			}
+		});
+		mEnabledPref = (CheckBoxPreference) findPreference("enabled");
+		mEnabledPref
+				.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+					public boolean onPreferenceChange(Preference p,
+							Object newValue) {
+						// Pop a toast when enabling alarms.
+						if (!mEnabledPref.isChecked()) {
+							popAlarmSetToast(SetAlarm.this, mHour, mMinutes,
+									mRepeatPref.getDaysOfWeek());
+						}
+						return SetAlarm.this.onPreferenceChange(p, newValue);
+					}
+				});
+		mTimePref = findPreference("time");
+		mAlarmPref = (AlarmPreference) findPreference("alarm");
+		mAlarmPref.setOnPreferenceChangeListener(this);
+		mVibratePref = (CheckBoxPreference) findPreference("vibrate");
+		mVibratePref.setOnPreferenceChangeListener(this);
+		mRepeatPref = (RepeatPreference) findPreference("setRepeat");
+		mRepeatPref.setOnPreferenceChangeListener(this);
 
-        Alarm alarm = null;
-        if (mId == -1) {
-            // No alarm id means create a new alarm.
-            alarm = new Alarm();
-        } else {
-            /* load alarm details from database */
-            alarm = Alarms.getAlarm(getContentResolver(), mId);
-            // Bad alarm, bail to avoid a NPE.
-            if (alarm == null) {
-                finish();
-                return;
-            }
-        }
-        mOriginalAlarm = alarm;
+		Intent i = getIntent();
+		mId = i.getIntExtra(Alarms.ALARM_ID, -1);
+		if (true) {
+			Log.v("wangxianming", "In SetAlarm, alarm id = " + mId);
+		}
 
-        updatePrefs(mOriginalAlarm);
+		Alarm alarm = null;
+		if (mId == -1) {
+			// No alarm id means create a new alarm.
+			alarm = new Alarm();
 
-        // We have to do this to get the save/cancel buttons to highlight on
-        // their own.
-        getListView().setItemsCanFocus(true);
+		} else {
+			/* load alarm details from database */
+			alarm = Alarms.getAlarm(getContentResolver(), mId);
+			// Bad alarm, bail to avoid a NPE.
+			if (alarm == null) {
+				finish();
+				return;
+			}
+		}
+		mOriginalAlarm = alarm;
 
-        // Attach actions to each button.
-        Button b = (Button) findViewById(R.id.alarm_save);
-        b.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    saveAlarm();
-                    finish();
-                }
-        });
-        final Button revert = (Button) findViewById(R.id.alarm_revert);
-        revert.setEnabled(false);
-        revert.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    int newId = mId;
-                    updatePrefs(mOriginalAlarm);
-                    // "Revert" on a newly created alarm should delete it.
-                    if (mOriginalAlarm.id == -1) {
-                        Alarms.deleteAlarm(SetAlarm.this, newId);
-                    } else {
-                        saveAlarm();
-                    }
-                    revert.setEnabled(false);
-                }
-        });
-        b = (Button) findViewById(R.id.alarm_delete);
-        if (mId == -1) {
-            b.setEnabled(false);
-        } else {
-            b.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    deleteAlarm();
-                }
-            });
-        }
+		updatePrefs(mOriginalAlarm);
 
-        // The last thing we do is pop the time picker if this is a new alarm.
-        if (mId == -1) {
-            // Assume the user hit cancel
-            mTimePickerCancelled = true;
-            showTimePicker();
-        }
-    }
+		// We have to do this to get the save/cancel buttons to highlight on
+		// their own.
+		getListView().setItemsCanFocus(true);
 
-    // Used to post runnables asynchronously.
-    private static final Handler sHandler = new Handler();
+		// Attach actions to each button.
+		Button b = (Button) findViewById(R.id.alarm_save);
+		b.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				saveAlarm();
+				finish();
+			}
+		});
+		// final Button revert = (Button) findViewById(R.id.alarm_revert);
+		// revert.setEnabled(false);
+		// revert.setOnClickListener(new View.OnClickListener() {
+		// public void onClick(View v) {
+		// int newId = mId;
+		// updatePrefs(mOriginalAlarm);
+		// // "Revert" on a newly created alarm should delete it.
+		// if (mOriginalAlarm.id == -1) {
+		// Alarms.deleteAlarm(SetAlarm.this, newId);
+		// } else {
+		// saveAlarm();
+		// }
+		// revert.setEnabled(false);
+		// }
+		// });
+		b = (Button) findViewById(R.id.alarm_delete);
+		if (mId == -1) {
+			// b.setEnabled(false);
+			// 如果是新建的一个闹钟，则该按钮显示的是取消闹钟
+			// 文案变成是取消
+			// 取消掉闹钟
+			// 跳转到首页去
+			b.setText("取消");
+			b.setOnClickListener(new View.OnClickListener() {
+				public void onClick(View v) {
+					int newId = mId;
+					updatePrefs(mOriginalAlarm);
+					// "Revert" on a newly created alarm should delete it.
+					Alarms.deleteAlarm(SetAlarm.this, newId);
+					finish();
+				}
+			});
+		} else {
+			b.setOnClickListener(new View.OnClickListener() {
+				public void onClick(View v) {
+					deleteAlarm();
+				}
+			});
+		}
 
-    public boolean onPreferenceChange(final Preference p, Object newValue) {
-        // Asynchronously save the alarm since this method is called _before_
-        // the value of the preference has changed.
-        sHandler.post(new Runnable() {
-            public void run() {
-                // Editing any preference (except enable) enables the alarm.
-                if (p != mEnabledPref) {
-                    mEnabledPref.setChecked(true);
-                }
-                saveAlarmAndEnableRevert();
-            }
-        });
-        return true;
-    }
+		// The last thing we do is pop the time picker if this is a new alarm.
+		if (mId == -1) {
+			// Assume the user hit cancel
+			mTimePickerCancelled = true;
+			// showTimePicker();
+		}
+	}
 
-    private void updatePrefs(Alarm alarm) {
-        mId = alarm.id;
-        mEnabledPref.setChecked(alarm.enabled);
-        mLabel.setText(alarm.label);
-        mLabel.setSummary(alarm.label);
-        mHour = alarm.hour;
-        mMinutes = alarm.minutes;
-        mRepeatPref.setDaysOfWeek(alarm.daysOfWeek);
-        mVibratePref.setChecked(alarm.vibrate);
-        // Give the alert uri to the preference.
-        mAlarmPref.setAlert(alarm.alert);
-        updateTime();
-    }
+	class OnChangeListener implements OnClickListener {
+		@Override
+		public void onClick(View v) {
+			// TODO Auto-generated method stub
+			int h = timePick1.getCurrentHour();
+			int m = timePick1.getCurrentMinute();
+			System.out.println("h:" + h + "   m:" + m);
+		}
+	}
 
-    @Override
-    public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen,
-            Preference preference) {
-        if (preference == mTimePref) {
-            showTimePicker();
-        }
+	class TimeListener implements OnTimeChangedListener {
 
-        return super.onPreferenceTreeClick(preferenceScreen, preference);
-    }
+		/**
+		 * view 当前选中TimePicker控件 hourOfDay 当前控件选中TimePicker 的小时 minute
+		 * 当前选中控件TimePicker 的分钟
+		 */
+		@Override
+		public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
+			// TODO Auto-generated method stub
+			System.out.println("h:" + hourOfDay + " m:" + minute);
+		}
 
-    @Override
-    public void onBackPressed() {
-        // In the usual case of viewing an alarm, mTimePickerCancelled is
-        // initialized to false. When creating a new alarm, this value is
-        // assumed true until the user changes the time.
-        if (!mTimePickerCancelled) {
-            saveAlarm();
-        }
-        finish();
-    }
+	}
 
-    private void showTimePicker() {
-        new TimePickerDialog(this, this, mHour, mMinutes,
-                DateFormat.is24HourFormat(this)).show();
-    }
+	// Used to post runnables asynchronously.
+	private static final Handler sHandler = new Handler();
 
-    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-        // onTimeSet is called when the user clicks "Set"
-        mTimePickerCancelled = false;
-        mHour = hourOfDay;
-        mMinutes = minute;
-        updateTime();
-        // If the time has been changed, enable the alarm.
-        mEnabledPref.setChecked(true);
-        // Save the alarm and pop a toast.
-        popAlarmSetToast(this, saveAlarmAndEnableRevert());
-    }
+	public boolean onPreferenceChange(final Preference p, Object newValue) {
+		// Asynchronously save the alarm since this method is called _before_
+		// the value of the preference has changed.
+		sHandler.post(new Runnable() {
+			public void run() {
+				// Editing any preference (except enable) enables the alarm.
+				if (p != mEnabledPref) {
+					mEnabledPref.setChecked(true);
+				}
+				// saveAlarmAndEnableRevert();
+			}
+		});
+		return true;
+	}
 
-    private void updateTime() {
-        Log.v("wangxianming", "updateTime " + mId);
-        mTimePref.setSummary(Alarms.formatTime(this, mHour, mMinutes,
-                mRepeatPref.getDaysOfWeek()));
-    }
+	private void updatePrefs(Alarm alarm) {
+		mId = alarm.id;
+		mEnabledPref.setChecked(alarm.enabled);
+		mLabel.setText(alarm.label);
+		mLabel.setSummary(alarm.label);
+		mHour = alarm.hour;
+		mMinutes = alarm.minutes;
+		mRepeatPref.setDaysOfWeek(alarm.daysOfWeek);
+		mVibratePref.setChecked(alarm.vibrate);
+		// Give the alert uri to the preference.
+		mAlarmPref.setAlert(alarm.alert);
+		updateTime();
+	}
 
-    private long saveAlarmAndEnableRevert() {
-        // Enable "Revert" to go back to the original Alarm.
-        final Button revert = (Button) findViewById(R.id.alarm_revert);
-        revert.setEnabled(true);
-        return saveAlarm();
-    }
+	@Override
+	public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen,
+			Preference preference) {
+		if (preference == mTimePref) {
+			showTimePicker();
+		}
 
-    private long saveAlarm() {
-        Alarm alarm = new Alarm();
-        alarm.id = mId;
-        alarm.enabled = mEnabledPref.isChecked();
-        alarm.hour = mHour;
-        alarm.minutes = mMinutes;
-        alarm.daysOfWeek = mRepeatPref.getDaysOfWeek();
-        alarm.vibrate = mVibratePref.isChecked();
-        alarm.label = mLabel.getText();
-        alarm.alert = mAlarmPref.getAlert();
+		return super.onPreferenceTreeClick(preferenceScreen, preference);
+	}
 
-        long time;
-        if (alarm.id == -1) {
-            time = Alarms.addAlarm(this, alarm);
-            // addAlarm populates the alarm with the new id. Update mId so that
-            // changes to other preferences update the new alarm.
-            mId = alarm.id;
-        } else {
-            time = Alarms.setAlarm(this, alarm);
-        }
-        return time;
-    }
+	@Override
+	public void onBackPressed() {
+		// In the usual case of viewing an alarm, mTimePickerCancelled is
+		// initialized to false. When creating a new alarm, this value is
+		// assumed true until the user changes the time.
+		if (!mTimePickerCancelled) {
+			saveAlarm();
+		}
+		finish();
+	}
 
-    private void deleteAlarm() {
-        new AlertDialog.Builder(this)
-                .setTitle(getString(R.string.delete_alarm))
-                .setMessage(getString(R.string.delete_alarm_confirm))
-                .setPositiveButton(android.R.string.ok,
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface d, int w) {
-                                Alarms.deleteAlarm(SetAlarm.this, mId);
-                                finish();
-                            }
-                        })
-                .setNegativeButton(android.R.string.cancel, null)
-                .show();
-    }
+	private void showTimePicker() {
+		new TimePickerDialog(this, this, mHour, mMinutes,
+				DateFormat.is24HourFormat(this)).show();
+	}
 
-    /**
-     * Display a toast that tells the user how long until the alarm
-     * goes off.  This helps prevent "am/pm" mistakes.
-     */
-    static void popAlarmSetToast(Context context, int hour, int minute,
-                                 Alarm.DaysOfWeek daysOfWeek) {
-        popAlarmSetToast(context,
-                Alarms.calculateAlarm(hour, minute, daysOfWeek)
-                .getTimeInMillis());
-    }
+	public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+		// onTimeSet is called when the user clicks "Set"
+		mTimePickerCancelled = false;
+		mHour = hourOfDay;
+		mMinutes = minute;
+		updateTime();
+		// If the time has been changed, enable the alarm.
+		mEnabledPref.setChecked(true);
+		// Save the alarm and pop a toast.
+		// popAlarmSetToast(this, saveAlarmAndEnableRevert());
+	}
 
-    static void popAlarmSetToast(Context context, long timeInMillis) {
-        String toastText = formatToast(context, timeInMillis);
-        Toast toast = Toast.makeText(context, toastText, Toast.LENGTH_LONG);
-        ToastMaster.setToast(toast);
-        toast.show();
-    }
+	private void updateTime() {
+		Log.v("wangxianming", "updateTime " + mId);
+		mTimePref.setSummary(Alarms.formatTime(this, mHour, mMinutes,
+				mRepeatPref.getDaysOfWeek()));
+	}
 
-    /**
-     * format "Alarm set for 2 days 7 hours and 53 minutes from
-     * now"
-     */
-    static String formatToast(Context context, long timeInMillis) {
-        long delta = timeInMillis - System.currentTimeMillis();
-        long hours = delta / (1000 * 60 * 60);
-        long minutes = delta / (1000 * 60) % 60;
-        long days = hours / 24;
-        hours = hours % 24;
+	private long saveAlarmAndEnableRevert() {
+		// Enable "Revert" to go back to the original Alarm.
+		final Button revert = (Button) findViewById(R.id.alarm_revert);
+		revert.setEnabled(true);
+		return saveAlarm();
+	}
 
-        String daySeq = (days == 0) ? "" :
-                (days == 1) ? context.getString(R.string.day) :
-                context.getString(R.string.days, Long.toString(days));
+	private long saveAlarm() {
+		Alarm alarm = new Alarm();
+		alarm.id = mId;
+		alarm.enabled = mEnabledPref.isChecked();
+		alarm.hour = mHour;
+		alarm.minutes = mMinutes;
+		alarm.daysOfWeek = mRepeatPref.getDaysOfWeek();
+		alarm.vibrate = mVibratePref.isChecked();
+		alarm.label = mLabel.getText();
+		alarm.alert = mAlarmPref.getAlert();
 
-        String minSeq = (minutes == 0) ? "" :
-                (minutes == 1) ? context.getString(R.string.minute) :
-                context.getString(R.string.minutes, Long.toString(minutes));
+		long time;
+		if (alarm.id == -1) {
+			time = Alarms.addAlarm(this, alarm);
+			// addAlarm populates the alarm with the new id. Update mId so that
+			// changes to other preferences update the new alarm.
+			mId = alarm.id;
+		} else {
+			time = Alarms.setAlarm(this, alarm);
+		}
+		return time;
+	}
 
-        String hourSeq = (hours == 0) ? "" :
-                (hours == 1) ? context.getString(R.string.hour) :
-                context.getString(R.string.hours, Long.toString(hours));
+	private void deleteAlarm() {
+		new AlertDialog.Builder(this)
+				.setTitle(getString(R.string.delete_alarm))
+				.setMessage(getString(R.string.delete_alarm_confirm))
+				.setPositiveButton(android.R.string.ok,
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface d, int w) {
+								Alarms.deleteAlarm(SetAlarm.this, mId);
+								finish();
+							}
+						}).setNegativeButton(android.R.string.cancel, null)
+				.show();
+	}
 
-        boolean dispDays = days > 0;
-        boolean dispHour = hours > 0;
-        boolean dispMinute = minutes > 0;
+	/**
+	 * Display a toast that tells the user how long until the alarm goes off.
+	 * This helps prevent "am/pm" mistakes.
+	 */
+	static void popAlarmSetToast(Context context, int hour, int minute,
+			Alarm.DaysOfWeek daysOfWeek) {
+		popAlarmSetToast(context,
+				Alarms.calculateAlarm(hour, minute, daysOfWeek)
+						.getTimeInMillis());
+	}
 
-        int index = (dispDays ? 1 : 0) |
-                    (dispHour ? 2 : 0) |
-                    (dispMinute ? 4 : 0);
+	static void popAlarmSetToast(Context context, long timeInMillis) {
+		String toastText = formatToast(context, timeInMillis);
+		Toast toast = Toast.makeText(context, toastText, Toast.LENGTH_LONG);
+		ToastMaster.setToast(toast);
+		toast.show();
+	}
 
-        String[] formats = context.getResources().getStringArray(R.array.alarm_set);
-        return String.format(formats[index], daySeq, hourSeq, minSeq);
-    }
+	/**
+	 * format "Alarm set for 2 days 7 hours and 53 minutes from now"
+	 */
+	static String formatToast(Context context, long timeInMillis) {
+		long delta = timeInMillis - System.currentTimeMillis();
+		long hours = delta / (1000 * 60 * 60);
+		long minutes = delta / (1000 * 60) % 60;
+		long days = hours / 24;
+		hours = hours % 24;
+
+		String daySeq = (days == 0) ? "" : (days == 1) ? context
+				.getString(R.string.day) : context.getString(R.string.days,
+				Long.toString(days));
+
+		String minSeq = (minutes == 0) ? "" : (minutes == 1) ? context
+				.getString(R.string.minute) : context.getString(
+				R.string.minutes, Long.toString(minutes));
+
+		String hourSeq = (hours == 0) ? "" : (hours == 1) ? context
+				.getString(R.string.hour) : context.getString(R.string.hours,
+				Long.toString(hours));
+
+		boolean dispDays = days > 0;
+		boolean dispHour = hours > 0;
+		boolean dispMinute = minutes > 0;
+
+		int index = (dispDays ? 1 : 0) | (dispHour ? 2 : 0)
+				| (dispMinute ? 4 : 0);
+
+		String[] formats = context.getResources().getStringArray(
+				R.array.alarm_set);
+		return String.format(formats[index], daySeq, hourSeq, minSeq);
+	}
 }

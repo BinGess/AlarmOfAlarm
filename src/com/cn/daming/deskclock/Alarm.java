@@ -18,7 +18,6 @@ package com.cn.daming.deskclock;
 
 import java.text.DateFormatSymbols;
 import java.util.Calendar;
-
 import android.content.Context;
 import android.database.Cursor;
 import android.media.RingtoneManager;
@@ -27,6 +26,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.BaseColumns;
 import android.util.Log;
+import com.cn.blake.deskclock.R;
 
 public final class Alarm implements Parcelable {
 
